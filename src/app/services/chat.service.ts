@@ -9,7 +9,14 @@ import {
   getAuth,
   User,
 } from '@angular/fire/auth';
-import { map, switchMap, firstValueFrom, filter, Observable, Subscription } from 'rxjs';
+import {
+  map,
+  switchMap,
+  firstValueFrom,
+  filter,
+  Observable,
+  Subscription,
+} from 'rxjs';
 import {
   doc,
   docData,
@@ -41,14 +48,13 @@ import { getToken, Messaging, onMessage } from '@angular/fire/messaging';
 import { Router } from '@angular/router';
 
 type ChatMessage = {
-  name: string | null,
-  profilePicUrl: string | null,
-  timestamp: FieldValue,
-  uid: string | null,
-  text?: string,
-  imageUrl?: string
+  name: string | null;
+  profilePicUrl: string | null;
+  timestamp: FieldValue;
+  uid: string | null;
+  text?: string;
+  imageUrl?: string;
 };
-
 
 @Injectable({
   providedIn: 'root',
@@ -66,23 +72,40 @@ export class ChatService {
   user$ = user(this.auth);
   currentUser: User | null = this.auth.currentUser;
   userSubscription: Subscription;
-  
+
   constructor() {
     this.userSubscription = this.user$.subscribe((aUser: User | null) => {
-        this.currentUser = aUser;
+      this.currentUser = aUser;
     });
   }
 
-  // Login Friendly Chat.
-  login() {}
+  // Signs-in Friendly Chat.
+  login() {
+    console.log('Signing In...');
+    signInWithPopup(this.auth, this.provider).then((result) => {
+      console.log('Signed in as ', result.user);
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      this.router.navigate(['/', 'chat']);
+      return credential;
+    });
+  }
 
   // Logout of Friendly Chat.
-  logout() {}
+  logout() {
+    signOut(this.auth)
+      .then(() => {
+        this.router.navigate(['/', 'login']);
+        console.log('signed out');
+      })
+      .catch((error) => {
+        console.log('sign out error: ' + error);
+      });
+  }
 
   // Adds a text or image message to Cloud Firestore.
   addMessage = async (
     textMessage: string | null,
-    imageUrl: string | null
+    imageUrl: string | null,
   ): Promise<void | DocumentReference<DocumentData>> => {};
 
   // Saves a new message to Cloud Firestore.
@@ -110,7 +133,7 @@ export class ChatService {
   async uploadToStorage(
     path: string,
     input: HTMLInputElement,
-    contentType: any
+    contentType: any,
   ) {
     return null;
   }

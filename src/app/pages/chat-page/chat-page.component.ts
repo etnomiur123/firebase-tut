@@ -10,7 +10,7 @@ import { ChatService } from 'src/app/services/chat.service';
   templateUrl: './chat-page.component.html',
   styleUrls: ['./chat-page.component.css'],
   standalone: true,
-  imports: [AsyncPipe, FormsModule]
+  imports: [AsyncPipe, FormsModule],
 })
 export class ChatPageComponent {
   chatService = inject(ChatService);
