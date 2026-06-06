@@ -102,48 +102,48 @@ export class ChatService {
       });
   }
 
-// Adds a text or image message to Cloud Firestore.
-addMessage = async (
-  textMessage: string | null,
-  imageUrl: string | null,
-): Promise<void | DocumentReference<DocumentData>> => {
-  // ignore empty messages
-  if (!textMessage && !imageUrl) {
-    console.log(
-      "addMessage was called without a message",
-      textMessage,
-      imageUrl,
-    );
-    return;
-  }
+  // Adds a text or image message to Cloud Firestore.
+  addMessage = async (
+    textMessage: string | null,
+    imageUrl: string | null,
+  ): Promise<void | DocumentReference<DocumentData>> => {
+    // ignore empty messages
+    if (!textMessage && !imageUrl) {
+      console.log(
+        'addMessage was called without a message',
+        textMessage,
+        imageUrl,
+      );
+      return;
+    }
 
-  if (this.currentUser === null) {
-    console.log("addMessage requires a signed-in user");
-    return;
-  }
+    if (this.currentUser === null) {
+      console.log('addMessage requires a signed-in user');
+      return;
+    }
 
-  const message: ChatMessage = {
-    name: this.currentUser.displayName,
-    profilePicUrl: this.currentUser.photoURL,
-    timestamp: serverTimestamp(),
-    uid: this.currentUser?.uid,
+    const message: ChatMessage = {
+      name: this.currentUser.displayName,
+      profilePicUrl: this.currentUser.photoURL,
+      timestamp: serverTimestamp(),
+      uid: this.currentUser?.uid,
+    };
+
+    textMessage && (message.text = textMessage);
+    imageUrl && (message.imageUrl = imageUrl);
+
+    try {
+      console.log('Saving message', message);
+      const newMessageRef = await addDoc(
+        collection(this.firestore, 'messages'),
+        message,
+      );
+      return newMessageRef;
+    } catch (error) {
+      console.error('Error writing new message to Firebase Database', error);
+      return;
+    }
   };
-
-  textMessage && (message.text = textMessage);
-  imageUrl && (message.imageUrl = imageUrl);
-
-  try {
-    console.log("Saving message", message);
-    const newMessageRef = await addDoc(
-      collection(this.firestore, "messages"),
-      message,
-    );
-    return newMessageRef;
-  } catch (error) {
-    console.error("Error writing new message to Firebase Database", error);
-    return;
-  }
-};
 
   // Saves a new message to Cloud Firestore.
   saveTextMessage = async (messageText: string) => {
@@ -151,20 +151,31 @@ addMessage = async (
   };
 
   // Loads chat messages history and listens for upcoming ones.
-loadMessages = () => {
-  // Create the query to load the last 12 messages and listen for new ones.
-  const recentMessagesQuery = query(collection(this.firestore, 'messages'), orderBy('timestamp', 'desc'), limit(12));
-  // Start listening to the query.
-  return collectionData(recentMessagesQuery);
-}
+  loadMessages = () => {
+    // Create the query to load the last 12 messages and listen for new ones.
+    const recentMessagesQuery = query(
+      collection(this.firestore, 'messages'),
+      orderBy('timestamp', 'desc'),
+      limit(12),
+    );
+
+    // Include each Firestore document id in the emitted message object.
+    return collectionData(recentMessagesQuery, { idField: 'id' });
+  };
 
   // Saves a new message containing an image in Firebase.
   // This first saves the image in Firebase storage.
   saveImageMessage = async (file: any) => {};
 
-  async updateData(path: string, data: any) {}
+  async updateData(path: string, data: any) {
+    const docRef = doc(this.firestore, path);
+    await updateDoc(docRef, data);
+  }
 
-  async deleteData(path: string) {}
+  async deleteData(path: string) {
+    const docRef = doc(this.firestore, path);
+    await deleteDoc(docRef);
+  }
 
   getDocData(path: string) {}
 

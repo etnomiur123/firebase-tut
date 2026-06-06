@@ -2,7 +2,7 @@ import { AsyncPipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { DocumentData } from '@angular/fire/firestore';
 import { FormsModule } from '@angular/forms';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { ChatService } from 'src/app/services/chat.service';
 
 @Component({
@@ -14,9 +14,13 @@ import { ChatService } from 'src/app/services/chat.service';
 })
 export class ChatPageComponent {
   chatService = inject(ChatService);
-  messages$ = this.chatService.loadMessages() as Observable<DocumentData[]>;
+  messages$ = (
+    this.chatService.loadMessages() as Observable<DocumentData[]>
+  ).pipe(tap(console.log));
   user$ = this.chatService.user$;
   text = '';
+  editModeField = '';
+  editedText = '';
 
   sendTextMessage() {
     this.chatService.saveTextMessage(this.text);
@@ -29,5 +33,20 @@ export class ChatPageComponent {
       return;
     }
     this.chatService.saveImageMessage(imgFile);
+  }
+
+  enableEditMode(id: string, text: string) {
+    this.editModeField = id;
+    this.editedText = text;
+  }
+
+  editMessage(id: string, newText: string) {
+    this.chatService.updateData('messages/' + id, { text: newText });
+    this.editModeField = '';
+  }
+
+  cancelEditMode() {
+    this.editModeField = '';
+    this.editedText = '';
   }
 }
