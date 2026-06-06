@@ -61,7 +61,7 @@
                   }
                   <div class="flex flex-nowrap justify-end">
                     <span class="text-neutral-500 text-sm">
-                      {{ message["timestamp"].toDate().toLocaleTimeString() }}
+                      {{ message["timestamp"]?.toDate().toLocaleTimeString() }}
                     </span>
                   </div>
                 </div>
@@ -85,16 +85,20 @@
           }
         </div>
         <div class="flex gap-2 justify-end mr-4 mb-4">
-        <button
-          (click)="this.chatService.deleteData('messages/' + message['id'])"
-          class="text-red-500 hover:text-red-700 px-2 py-1 rounded"
-        >
-          Delete
-        </button>
-        <button (click)="enableEditMode(message.id, message.text)" class="text-blue-500 hover:text-blue-700 px-2 py-1 rounded">Edit</button>
+          <button
+            (click)="this.chatService.deleteData('messages/' + message['id'])"
+            class="text-red-500 hover:text-red-700 px-2 py-1 rounded"
+          >
+            Delete
+          </button>
+          <button
+            (click)="enableEditMode(message.id, message.text)"
+            class="text-blue-500 hover:text-blue-700 px-2 py-1 rounded"
+          >
+            Edit
+          </button>
         </div>
       </div>
-
     }
   </div>
   <div
